@@ -45,8 +45,8 @@ export const ObjectCodes = {
   [ObjectTypes.Finish]: 1,
   [ObjectTypes.Path]: 1,
   [ObjectTypes.Block]: -1,
-  [ObjectTypes.Sea]: 2,
-  [ObjectTypes.Swamp]: 4
+  [ObjectTypes.Swamp]: 2,
+  [ObjectTypes.Sea]: 4
 };
 
 export const CANVAS_WIDTH = 750;

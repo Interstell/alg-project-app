@@ -36,15 +36,20 @@ const initialShapes = [
 class App extends React.Component {
   state = {
     shapes: initialShapes,
-    stageRef: React.createRef()
+    stageRef: React.createRef(),
+    isCaptureMode: false
   };
 
   onShapesChanged = newShapes => {
     this.setState({ shapes: newShapes });
   };
 
+  onCaptureModeChanged = (captureMode, cb = () => {}) => {
+    this.setState({ isCaptureMode: captureMode }, cb);
+  };
+
   render() {
-    const { shapes, stageRef } = this.state;
+    const { shapes, stageRef, isCaptureMode } = this.state;
     return (
       <div className="App">
         <section className="hero is-fullheight">
@@ -57,13 +62,16 @@ class App extends React.Component {
                 <div className="column is-one-quarter">
                   <MapEditor
                     shapes={shapes}
+                    isCaptureMode={isCaptureMode}
                     onShapesChanged={this.onShapesChanged}
+                    onCaptureModeChanged={this.onCaptureModeChanged}
                     stageRef={stageRef}
                   />
                 </div>
                 <div className="column is-three-quarters canvas-block">
                   <CanvasMap
                     shapes={shapes}
+                    isCaptureMode={isCaptureMode}
                     onShapesChanged={this.onShapesChanged}
                     stageRef={stageRef}
                   />

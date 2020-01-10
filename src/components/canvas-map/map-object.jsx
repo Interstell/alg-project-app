@@ -16,6 +16,7 @@ const MapShape = ({
   shapeProps,
   isSelected,
   isWithShadow,
+  isCaptureMode,
   onSelect,
   onChange,
   onToForefront
@@ -24,11 +25,11 @@ const MapShape = ({
   const trRef = React.useRef();
 
   React.useEffect(() => {
-    if (isSelected && Shape !== Line) {
+    if (isSelected && !isCaptureMode && Shape !== Line) {
       trRef.current.setNode(shapeRef.current);
       trRef.current.getLayer().batchDraw();
     }
-  }, [Shape, isSelected]);
+  }, [Shape, isSelected, isCaptureMode]);
 
   const handleDragStart = e => {
     e.target.setAttrs({
@@ -87,7 +88,7 @@ const MapShape = ({
           });
         }}
       />
-      {isSelected && (
+      {isSelected && !isCaptureMode && (
         <Transformer
           ref={trRef}
           boundBoxFunc={(oldBox, newBox) => {
@@ -105,6 +106,7 @@ const MapShape = ({
 const MapLine = ({
   shapeProps,
   isSelected,
+  isCaptureMode,
   onSelect,
   onChange,
   onToForefront
@@ -144,7 +146,7 @@ const MapLine = ({
         onClick={onSelect}
         onDblClick={onToForefront}
       />
-      {shapeRef.current && isSelected && (
+      {shapeRef.current && isSelected && !isCaptureMode && (
         <React.Fragment>
           <Circle
             ref={anchor1Ref}

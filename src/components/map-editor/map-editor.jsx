@@ -205,24 +205,28 @@ class MapEditor extends React.Component {
   };
 
   onBuildPathButtonClicked = async () => {
-    const { shapes } = this.props;
+    const { shapes, onCaptureModeChanged } = this.props;
 
-    this.setState({ isPathLoading: true });
-    this.removePath();
+    onCaptureModeChanged(true, async () => {
+      this.setState({ isPathLoading: true });
+      this.removePath();
 
-    const codeMatrix = this.buildCodeMatrix();
+      const codeMatrix = this.buildCodeMatrix();
 
-    const startShape = shapes.find(s => s.type === ObjectTypes.Start);
-    const finishShape = shapes.find(s => s.type === ObjectTypes.Finish);
-    const path = await API.getPathForMatrix({
-      matrix: codeMatrix,
-      start: [startShape.attributes.x, startShape.attributes.y],
-      end: [finishShape.attributes.x, finishShape.attributes.y]
+      const startShape = shapes.find(s => s.type === ObjectTypes.Start);
+      const finishShape = shapes.find(s => s.type === ObjectTypes.Finish);
+      const path = await API.getPathForMatrix({
+        matrix: codeMatrix,
+        start: [startShape.attributes.x, startShape.attributes.y],
+        end: [finishShape.attributes.x, finishShape.attributes.y]
+      });
+
+      this.drawBuiltPath(path);
+
+      this.setState({ isPathLoading: false });
+
+      onCaptureModeChanged(false);
     });
-
-    this.drawBuiltPath(path);
-
-    this.setState({ isPathLoading: false });
   };
 
   render() {

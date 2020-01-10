@@ -3,7 +3,7 @@ import { Stage, Layer } from 'react-konva';
 
 import MapObject from './map-object';
 
-import { CANVAS_WIDTH, CANVAS_HEIGHT } from '../../constants';
+import { CANVAS_WIDTH, CANVAS_HEIGHT, ObjectTypes } from '../../constants';
 
 class CanvasMap extends React.Component {
   constructor(props) {
@@ -15,6 +15,11 @@ class CanvasMap extends React.Component {
 
   selectShape = id => {
     this.setState({ selectedId: id });
+  };
+
+  deleteShape = id => {
+    const { shapes, onShapesChanged } = this.props;
+    onShapesChanged(shapes.filter(s => s.attributes.id !== id));
   };
 
   setShapeAttributes = (index, attributes) => {
@@ -38,9 +43,20 @@ class CanvasMap extends React.Component {
     onShapesChanged(newShapes);
   };
 
+  setStageHandlers = () => {
+    const { stageRef } = this.props;
+    const stage = stageRef.current;
+    if (stage) {
+      stage.on('contentContextmenu', e => {
+        e.evt.preventDefault();
+      });
+    }
+  };
+
   render() {
     const { selectedId } = this.state;
-    const { shapes, stageRef } = this.props;
+    const { shapes, isCaptureMode, stageRef } = this.props;
+    this.setStageHandlers();
 
     return (
       <Stage
@@ -55,7 +71,7 @@ class CanvasMap extends React.Component {
         }}
       >
         <Layer>
-          {shapes.map(({ shape: Shape, attributes }, i) => {
+          {shapes.map(({ shape: Shape, type, attributes }, i) => {
             return (
               <MapObject
                 Shape={Shape}
@@ -63,8 +79,17 @@ class CanvasMap extends React.Component {
                 shapeProps={attributes}
                 isSelected={attributes.id === selectedId}
                 isWithShadow={true}
-                onSelect={() => {
-                  this.selectShape(attributes.id);
+                isCaptureMode={isCaptureMode}
+                onSelect={e => {
+                  if (
+                    e.evt.button === 2 &&
+                    type !== ObjectTypes.Start &&
+                    type !== ObjectTypes.Finish
+                  ) {
+                    this.deleteShape(attributes.id);
+                  } else {
+                    this.selectShape(attributes.id);
+                  }
                 }}
                 onToForefront={() => {
                   this.putToForefront(i);
