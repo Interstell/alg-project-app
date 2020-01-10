@@ -1,5 +1,6 @@
 import React from 'react';
 import { Rect, Ellipse, Line } from 'react-konva';
+import _ from 'lodash';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faShapes,
@@ -7,8 +8,16 @@ import {
   faGripLines
 } from '@fortawesome/free-solid-svg-icons';
 import { faSquare, faCircle } from '@fortawesome/free-regular-svg-icons';
+import API from '../../api';
 
 import './map-editor.scss';
+import {
+  ObjectTypes,
+  ObjectColors,
+  ObjectCodes,
+  CANVAS_HEIGHT,
+  CANVAS_WIDTH
+} from '../../constants';
 
 const ShapeBlock = ({ name, onShapeChosen }) => (
   <div className="shapes-block">
@@ -34,20 +43,18 @@ const ShapeBlock = ({ name, onShapeChosen }) => (
             <FontAwesomeIcon className="dropdown-icon" icon={faSquare} />
             <p>Rectangle</p>
           </div>
-          <div className="dropdown-item shape-item-block">
-            <FontAwesomeIcon
-              className="dropdown-icon"
-              icon={faCircle}
-              onClick={() => onShapeChosen(Ellipse)}
-            />
+          <div
+            className="dropdown-item shape-item-block"
+            onClick={() => onShapeChosen(Ellipse)}
+          >
+            <FontAwesomeIcon className="dropdown-icon" icon={faCircle} />
             <p>Ellipse</p>
           </div>
-          <div className="dropdown-item shape-item-block">
-            <FontAwesomeIcon
-              className="dropdown-icon"
-              icon={faGripLines}
-              onClick={() => onShapeChosen(Line)}
-            />
+          <div
+            className="dropdown-item shape-item-block"
+            onClick={() => onShapeChosen(Line)}
+          >
+            <FontAwesomeIcon className="dropdown-icon" icon={faGripLines} />
             <p>Line</p>
           </div>
         </div>
@@ -56,18 +63,200 @@ const ShapeBlock = ({ name, onShapeChosen }) => (
   </div>
 );
 
+function getColorsForPixel(imageData, x, y) {
+  return [
+    imageData.data[y * (imageData.width * 4) + x * 4],
+    imageData.data[y * (imageData.width * 4) + x * 4 + 1],
+    imageData.data[y * (imageData.width * 4) + x * 4 + 2]
+  ];
+}
+
 class MapEditor extends React.Component {
-  onShapeChosen = shape => {
-    
+  state = {
+    isPathLoading: false
+  };
+
+  onObjectChosen = (type, shape) => {
+    const { shapes, onShapesChanged } = this.props;
+
+    let object;
+    const attributes = {};
+    switch (type) {
+      case ObjectTypes.Block:
+        attributes.fill = ObjectColors.Block.hex;
+        attributes.stroke = ObjectColors.Block.hex;
+        break;
+      case ObjectTypes.Sea:
+        attributes.fill = ObjectColors.Sea.hex;
+        attributes.stroke = ObjectColors.Sea.hex;
+        break;
+      case ObjectTypes.Swamp:
+        attributes.fill = ObjectColors.Swamp.hex;
+        attributes.stroke = ObjectColors.Swamp.hex;
+        break;
+      default:
+        break;
+    }
+    switch (shape) {
+      case Rect:
+        object = {
+          shape,
+          attributes: {
+            ...attributes,
+            x: _.random(100, 650),
+            y: _.random(100, 650),
+            width: 100 + (Math.random() - 0.5) * _.random(100),
+            height: 100 + (Math.random() - 0.5) * _.random(100),
+            id: 'rect' + _.random(100000)
+          }
+        };
+        break;
+      case Ellipse:
+        object = {
+          shape,
+          attributes: {
+            ...attributes,
+            x: _.random(100, 650),
+            y: _.random(100, 650),
+            radiusX: 75 + (Math.random() - 0.5) * _.random(50),
+            radiusY: 75 + (Math.random() - 0.5) * _.random(50),
+            id: 'ellipse' + _.random(100000)
+          }
+        };
+        break;
+      case Line:
+        object = {
+          shape,
+          attributes: {
+            ...attributes,
+            points: [
+              _.random(100, 300), // x1
+              _.random(100, 300), // y1
+              _.random(400, 700), // x2
+              _.random(400, 700) //  y2
+            ],
+            strokeWidth: 5,
+            id: 'line' + _.random(100000)
+          }
+        };
+        break;
+      default:
+        break;
+    }
+
+    onShapesChanged([...shapes, object]);
+  };
+
+  buildCodeMatrix = () => {
+    const { stageRef } = this.props;
+    const imageData = stageRef.current
+      .toCanvas()
+      .getContext('2d')
+      .getImageData(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+    const colorMatrix = [];
+    for (let x = 0; x < CANVAS_WIDTH; x++) {
+      const row = [];
+      for (let y = 0; y < CANVAS_HEIGHT; y++) {
+        row.push(getColorsForPixel(imageData, x, y));
+      }
+      colorMatrix.push(row);
+    }
+
+    const colors = Object.entries(ObjectColors);
+
+    return _.chunk(
+      _.flatten(colorMatrix).map(([r, g, b]) => {
+        if (r === 0 && g === 0 && b === 0) {
+          return 1;
+        } else {
+          const color = colors.find(
+            c => c[1].r === r && c[1].g === g && c[1].b === b
+          );
+          if (color) {
+            return ObjectCodes[color[0]];
+          } else return 1;
+        }
+      }),
+      CANVAS_WIDTH
+    );
+  };
+
+  removePath = () => {
+    const { shapes, onShapesChanged } = this.props;
+    onShapesChanged(shapes.filter(s => s.type !== ObjectTypes.Path));
+  };
+
+  drawBuiltPath = path => {
+    const { shapes, onShapesChanged } = this.props;
+
+    const pathShape = {
+      shape: Line,
+      type: ObjectTypes.Path,
+      attributes: {
+        points: _.flatten(path),
+        stroke: '#FF5722',
+        strokeWidth: 3,
+        id: 'path' + _.random(10000)
+      }
+    };
+
+    onShapesChanged([...shapes, pathShape]);
+  };
+
+  onBuildPathButtonClicked = async () => {
+    const { shapes } = this.props;
+
+    this.setState({ isPathLoading: true });
+    this.removePath();
+
+    const codeMatrix = this.buildCodeMatrix();
+
+    const startShape = shapes.find(s => s.type === ObjectTypes.Start);
+    const finishShape = shapes.find(s => s.type === ObjectTypes.Finish);
+    const path = await API.getPathForMatrix({
+      matrix: codeMatrix,
+      start: [startShape.attributes.x, startShape.attributes.y],
+      end: [finishShape.attributes.x, finishShape.attributes.y]
+    });
+
+    this.drawBuiltPath(path);
+
+    this.setState({ isPathLoading: false });
   };
 
   render() {
+    const { isPathLoading } = this.state;
+
     return (
       <React.Fragment>
         <h2 className="title is-4">Add element</h2>
         <div className="shapes-wrapper">
-          <ShapeBlock name="Block" onShapeChosen={this.onShapeChosen} />
+          <ShapeBlock
+            name={ObjectTypes.Block}
+            onShapeChosen={shape =>
+              this.onObjectChosen(ObjectTypes.Block, shape)
+            }
+          />
+          <ShapeBlock
+            name={ObjectTypes.Sea}
+            onShapeChosen={shape => this.onObjectChosen(ObjectTypes.Sea, shape)}
+          />
+          <ShapeBlock
+            name={ObjectTypes.Swamp}
+            onShapeChosen={shape =>
+              this.onObjectChosen(ObjectTypes.Swamp, shape)
+            }
+          />
         </div>
+        <button
+          className={
+            'button is-medium is-info ' + (isPathLoading ? 'is-loading' : '')
+          }
+          onClick={this.onBuildPathButtonClicked}
+        >
+          Build path
+        </button>
       </React.Fragment>
     );
   }

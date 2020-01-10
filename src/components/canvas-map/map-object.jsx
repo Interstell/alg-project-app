@@ -11,7 +11,15 @@ const MapObject = ({ Shape, ...rest }) => {
   }
 };
 
-const MapShape = ({ Shape, shapeProps, isSelected, onSelect, onChange }) => {
+const MapShape = ({
+  Shape,
+  shapeProps,
+  isSelected,
+  isWithShadow,
+  onSelect,
+  onChange,
+  onToForefront
+}) => {
   const shapeRef = React.useRef();
   const trRef = React.useRef();
 
@@ -20,7 +28,7 @@ const MapShape = ({ Shape, shapeProps, isSelected, onSelect, onChange }) => {
       trRef.current.setNode(shapeRef.current);
       trRef.current.getLayer().batchDraw();
     }
-  }, [isSelected]);
+  }, [Shape, isSelected]);
 
   const handleDragStart = e => {
     e.target.setAttrs({
@@ -48,15 +56,19 @@ const MapShape = ({ Shape, shapeProps, isSelected, onSelect, onChange }) => {
     });
   };
 
+  const shadowProps = isWithShadow
+    ? { shadowBlur: 10, shadowOpacity: 0.4 }
+    : {};
+
   return (
     <React.Fragment>
       <Shape
         onClick={onSelect}
         ref={shapeRef}
+        {...shadowProps}
         {...shapeProps}
-        shadowBlur={10}
-        shadowOpacity={0.4}
         draggable
+        onDblClick={onToForefront}
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
         onTransformEnd={() => {
@@ -90,7 +102,13 @@ const MapShape = ({ Shape, shapeProps, isSelected, onSelect, onChange }) => {
   );
 };
 
-const MapLine = ({ shapeProps, isSelected, onSelect, onChange }) => {
+const MapLine = ({
+  shapeProps,
+  isSelected,
+  onSelect,
+  onChange,
+  onToForefront
+}) => {
   const shapeRef = React.useRef();
 
   const anchor1Ref = React.createRef();
@@ -120,7 +138,12 @@ const MapLine = ({ shapeProps, isSelected, onSelect, onChange }) => {
 
   return (
     <React.Fragment>
-      <Line ref={shapeRef} {...shapeProps} onClick={onSelect} />
+      <Line
+        ref={shapeRef}
+        {...shapeProps}
+        onClick={onSelect}
+        onDblClick={onToForefront}
+      />
       {shapeRef.current && isSelected && (
         <React.Fragment>
           <Circle

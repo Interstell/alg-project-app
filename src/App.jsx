@@ -1,47 +1,42 @@
 import React from 'react';
-import { Rect, Ellipse, Line } from 'react-konva';
+import { Ellipse } from 'react-konva';
 
 import './App.scss';
 import CanvasMap from './components/canvas-map/canvas-map';
 import MapEditor from './components/map-editor/map-editor';
+import { ObjectTypes, ObjectColors } from './constants';
 
 const initialShapes = [
   {
-    shape: Rect,
+    shape: Ellipse,
+    type: ObjectTypes.Start,
     attributes: {
-      x: 10,
-      y: 10,
-      width: 100,
-      height: 100,
-      fill: 'red',
-      id: 'rect1'
+      x: 50,
+      y: 700,
+      radiusX: 20,
+      radiusY: 20,
+      fill: ObjectColors.Start.hex,
+      id: 'start'
     }
   },
   {
     shape: Ellipse,
+    type: ObjectTypes.Finish,
     attributes: {
-      x: 200,
-      y: 200,
-      radiusX: 50,
-      radiusY: 50,
-      fill: 'green',
-      id: 'circ1'
-    }
-  },
-  {
-    shape: Line,
-    attributes: {
-      points: [350, 150, 500, 150],
-      stroke: 'black',
-      strokeWidth: 5,
-      id: 'line1'
+      x: 700,
+      y: 50,
+      radiusX: 20,
+      radiusY: 20,
+      fill: ObjectColors.Finish.hex,
+      id: 'finish'
     }
   }
 ];
 
 class App extends React.Component {
   state = {
-    shapes: initialShapes
+    shapes: initialShapes,
+    stageRef: React.createRef()
   };
 
   onShapesChanged = newShapes => {
@@ -49,24 +44,28 @@ class App extends React.Component {
   };
 
   render() {
-    const { shapes } = this.state;
+    const { shapes, stageRef } = this.state;
     return (
       <div className="App">
         <section className="hero is-fullheight">
           <div className="hero-body">
             <div className="container">
-              <h1 className="title has-text-centered">Map Editor</h1>
+              <h1 className="title has-text-centered">
+                Shortest Path Map Builder
+              </h1>
               <div className="columns">
                 <div className="column is-one-quarter">
                   <MapEditor
                     shapes={shapes}
                     onShapesChanged={this.onShapesChanged}
+                    stageRef={stageRef}
                   />
                 </div>
                 <div className="column is-three-quarters canvas-block">
                   <CanvasMap
                     shapes={shapes}
                     onShapesChanged={this.onShapesChanged}
+                    stageRef={stageRef}
                   />
                 </div>
               </div>
