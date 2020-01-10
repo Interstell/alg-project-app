@@ -40,8 +40,8 @@ class App extends React.Component {
     isCaptureMode: false
   };
 
-  onShapesChanged = newShapes => {
-    this.setState({ shapes: newShapes });
+  onShapesChanged = (newShapes, cb = () => {}) => {
+    this.setState({ shapes: newShapes }, cb);
   };
 
   onCaptureModeChanged = (captureMode, cb = () => {}) => {

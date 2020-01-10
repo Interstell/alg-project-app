@@ -182,9 +182,12 @@ class MapEditor extends React.Component {
     );
   };
 
-  removePath = () => {
+  removePath = cb => {
     const { shapes, onShapesChanged } = this.props;
-    onShapesChanged(shapes.filter(s => s.type !== ObjectTypes.Path));
+    onShapesChanged(
+      shapes.filter(s => s.type !== ObjectTypes.Path),
+      cb
+    );
   };
 
   drawBuiltPath = path => {
@@ -209,23 +212,23 @@ class MapEditor extends React.Component {
 
     onCaptureModeChanged(true, async () => {
       this.setState({ isPathLoading: true });
-      this.removePath();
+      this.removePath(async () => {
+        const codeMatrix = this.buildCodeMatrix();
 
-      const codeMatrix = this.buildCodeMatrix();
+        const startShape = shapes.find(s => s.type === ObjectTypes.Start);
+        const finishShape = shapes.find(s => s.type === ObjectTypes.Finish);
+        const path = await API.getPathForMatrix({
+          matrix: codeMatrix,
+          start: [startShape.attributes.x, startShape.attributes.y],
+          end: [finishShape.attributes.x, finishShape.attributes.y]
+        });
 
-      const startShape = shapes.find(s => s.type === ObjectTypes.Start);
-      const finishShape = shapes.find(s => s.type === ObjectTypes.Finish);
-      const path = await API.getPathForMatrix({
-        matrix: codeMatrix,
-        start: [startShape.attributes.x, startShape.attributes.y],
-        end: [finishShape.attributes.x, finishShape.attributes.y]
+        this.drawBuiltPath(path);
+
+        this.setState({ isPathLoading: false });
+
+        onCaptureModeChanged(false);
       });
-
-      this.drawBuiltPath(path);
-
-      this.setState({ isPathLoading: false });
-
-      onCaptureModeChanged(false);
     });
   };
 
