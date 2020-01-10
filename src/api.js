@@ -6,7 +6,7 @@ async function getPathForMatrix({ matrix, start, end }) {
     start,
     end
   });
-  return response.data.path;
+  return response.data.paths;
 }
 
 export default {

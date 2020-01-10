@@ -193,18 +193,18 @@ class MapEditor extends React.Component {
   drawBuiltPath = path => {
     const { shapes, onShapesChanged } = this.props;
 
-    const pathShape = {
+    const segments = path.map(segment => ({
       shape: Line,
       type: ObjectTypes.Path,
       attributes: {
-        points: _.flatten(path),
+        points: _.flatten(segment),
         stroke: '#FF5722',
         strokeWidth: 3,
         id: 'path' + _.random(10000)
       }
-    };
+    }));
 
-    onShapesChanged([...shapes, pathShape]);
+    onShapesChanged([...shapes, ...segments]);
   };
 
   onBuildPathButtonClicked = async () => {
