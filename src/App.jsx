@@ -6,38 +6,45 @@ import CanvasMap from './components/canvas-map/canvas-map';
 import MapEditor from './components/map-editor/map-editor';
 import { ObjectTypes, ObjectColors } from './constants';
 
-const initialShapes = [
-  {
-    shape: Ellipse,
-    type: ObjectTypes.Start,
-    attributes: {
-      x: 50,
-      y: 700,
-      radiusX: 20,
-      radiusY: 20,
-      fill: ObjectColors.Start.hex,
-      id: 'start'
+const CANVAS_INITIAL_WIDTH = 800;
+const CANVAS_INITIAL_HEIGHT = 600;
+
+const getInitialShapes = (canvasWidth, canvasHeight) => {
+  return [
+    {
+      shape: Ellipse,
+      type: ObjectTypes.Start,
+      attributes: {
+        x: 50,
+        y: canvasHeight - 50,
+        radiusX: 20,
+        radiusY: 20,
+        fill: ObjectColors.Start.hex,
+        id: 'start'
+      }
+    },
+    {
+      shape: Ellipse,
+      type: ObjectTypes.Finish,
+      attributes: {
+        x: canvasWidth - 50,
+        y: 50,
+        radiusX: 20,
+        radiusY: 20,
+        fill: ObjectColors.Finish.hex,
+        id: 'finish'
+      }
     }
-  },
-  {
-    shape: Ellipse,
-    type: ObjectTypes.Finish,
-    attributes: {
-      x: 700,
-      y: 50,
-      radiusX: 20,
-      radiusY: 20,
-      fill: ObjectColors.Finish.hex,
-      id: 'finish'
-    }
-  }
-];
+  ];
+};
 
 class App extends React.Component {
   state = {
-    shapes: initialShapes,
+    shapes: getInitialShapes(CANVAS_INITIAL_WIDTH, CANVAS_INITIAL_HEIGHT),
     stageRef: React.createRef(),
-    isCaptureMode: false
+    isCaptureMode: false,
+    canvasWidth: CANVAS_INITIAL_WIDTH,
+    canvasHeight: CANVAS_INITIAL_HEIGHT
   };
 
   onShapesChanged = (newShapes, cb = () => {}) => {
@@ -48,8 +55,25 @@ class App extends React.Component {
     this.setState({ isCaptureMode: captureMode }, cb);
   };
 
+  onCanvasSizeChanged = (width, height) => {
+    const { canvasWidth, canvasHeight } = this.state;
+    if (canvasWidth !== width || canvasHeight !== height) {
+      this.setState({
+        canvasWidth: width,
+        canvasHeight: height,
+        shapes: getInitialShapes(width, height)
+      });
+    }
+  };
+
   render() {
-    const { shapes, stageRef, isCaptureMode } = this.state;
+    const {
+      shapes,
+      stageRef,
+      isCaptureMode,
+      canvasWidth,
+      canvasHeight
+    } = this.state;
     return (
       <div className="App">
         <section className="hero is-fullheight">
@@ -63,14 +87,19 @@ class App extends React.Component {
                   <MapEditor
                     shapes={shapes}
                     isCaptureMode={isCaptureMode}
+                    canvasWidth={canvasWidth}
+                    canvasHeight={canvasHeight}
                     onShapesChanged={this.onShapesChanged}
                     onCaptureModeChanged={this.onCaptureModeChanged}
+                    onCanvasSizeChanged={this.onCanvasSizeChanged}
                     stageRef={stageRef}
                   />
                 </div>
                 <div className="column is-three-quarters canvas-block">
                   <CanvasMap
                     shapes={shapes}
+                    canvasWidth={canvasWidth}
+                    canvasHeight={canvasHeight}
                     isCaptureMode={isCaptureMode}
                     onShapesChanged={this.onShapesChanged}
                     stageRef={stageRef}

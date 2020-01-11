@@ -48,6 +48,3 @@ export const ObjectCodes = {
   [ObjectTypes.Swamp]: 2,
   [ObjectTypes.Sea]: 4
 };
-
-export const CANVAS_WIDTH = 750;
-export const CANVAS_HEIGHT = 750;

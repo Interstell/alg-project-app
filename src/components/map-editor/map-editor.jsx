@@ -11,13 +11,7 @@ import { faSquare, faCircle } from '@fortawesome/free-regular-svg-icons';
 import API from '../../api';
 
 import './map-editor.scss';
-import {
-  ObjectTypes,
-  ObjectColors,
-  ObjectCodes,
-  CANVAS_HEIGHT,
-  CANVAS_WIDTH
-} from '../../constants';
+import { ObjectTypes, ObjectColors, ObjectCodes } from '../../constants';
 
 const ShapeBlock = ({ name, onShapeChosen }) => (
   <div className="shapes-block">
@@ -72,12 +66,17 @@ function getColorsForPixel(imageData, x, y) {
 }
 
 class MapEditor extends React.Component {
-  state = {
-    isPathLoading: false
-  };
+  constructor(props) {
+    super(props);
+    this.state = {
+      isPathLoading: false,
+      editedCanvasWidth: props.canvasWidth,
+      editedCanvasHeight: props.canvasHeight
+    };
+  }
 
   onObjectChosen = (type, shape) => {
-    const { shapes, onShapesChanged } = this.props;
+    const { shapes, onShapesChanged, canvasWidth, canvasHeight } = this.props;
 
     let object;
     const attributes = {};
@@ -103,8 +102,8 @@ class MapEditor extends React.Component {
           shape,
           attributes: {
             ...attributes,
-            x: _.random(100, 650),
-            y: _.random(100, 650),
+            x: _.random(50, canvasWidth - 100),
+            y: _.random(50, canvasHeight - 100),
             width: 100 + (Math.random() - 0.5) * _.random(100),
             height: 100 + (Math.random() - 0.5) * _.random(100),
             id: 'rect' + _.random(100000)
@@ -116,8 +115,8 @@ class MapEditor extends React.Component {
           shape,
           attributes: {
             ...attributes,
-            x: _.random(100, 650),
-            y: _.random(100, 650),
+            x: _.random(50, canvasWidth - 100),
+            y: _.random(50, canvasHeight - 100),
             radiusX: 75 + (Math.random() - 0.5) * _.random(50),
             radiusY: 75 + (Math.random() - 0.5) * _.random(50),
             id: 'ellipse' + _.random(100000)
@@ -130,10 +129,10 @@ class MapEditor extends React.Component {
           attributes: {
             ...attributes,
             points: [
-              _.random(100, 300), // x1
-              _.random(100, 300), // y1
-              _.random(400, 700), // x2
-              _.random(400, 700) //  y2
+              _.random(50, Math.round(canvasWidth / 2) - 50), // x1
+              _.random(50, Math.round(canvasHeight / 2) - 50), // y1
+              _.random(Math.round(canvasWidth / 2) + 50, canvasWidth - 50), // x2
+              _.random(Math.round(canvasHeight / 2) + 50, canvasHeight - 50) //  y2
             ],
             strokeWidth: 5,
             id: 'line' + _.random(100000)
@@ -148,16 +147,16 @@ class MapEditor extends React.Component {
   };
 
   buildCodeMatrix = () => {
-    const { stageRef } = this.props;
+    const { canvasWidth, canvasHeight, stageRef } = this.props;
     const imageData = stageRef.current
       .toCanvas()
       .getContext('2d')
-      .getImageData(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+      .getImageData(0, 0, canvasWidth, canvasHeight);
 
     const colorMatrix = [];
-    for (let x = 0; x < CANVAS_WIDTH; x++) {
+    for (let x = 0; x < canvasWidth; x++) {
       const row = [];
-      for (let y = 0; y < CANVAS_HEIGHT; y++) {
+      for (let y = 0; y < canvasHeight; y++) {
         row.push(getColorsForPixel(imageData, x, y));
       }
       colorMatrix.push(row);
@@ -178,7 +177,7 @@ class MapEditor extends React.Component {
           } else return 1;
         }
       }),
-      CANVAS_WIDTH
+      canvasWidth
     );
   };
 
@@ -233,10 +232,45 @@ class MapEditor extends React.Component {
   };
 
   render() {
-    const { isPathLoading } = this.state;
+    const { isPathLoading, editedCanvasWidth, editedCanvasHeight } = this.state;
+    const { onCanvasSizeChanged } = this.props;
 
     return (
       <React.Fragment>
+        <h2 className="title is-4">Map size</h2>
+        <div className="map-size-wrapper">
+          <input
+            className="input"
+            type="number"
+            min="100"
+            max="1500"
+            placeholder="Width"
+            value={editedCanvasWidth}
+            onChange={e =>
+              this.setState({ editedCanvasWidth: Number(e.target.value) })
+            }
+          />
+          <p>x</p>
+          <input
+            className="input"
+            type="number"
+            min="100"
+            max="1500"
+            placeholder="Height"
+            value={editedCanvasHeight}
+            onChange={e =>
+              this.setState({ editedCanvasHeight: Number(e.target.value) })
+            }
+          />
+          <button
+            className="button is-link"
+            onClick={() =>
+              onCanvasSizeChanged(editedCanvasWidth, editedCanvasHeight)
+            }
+          >
+            Save
+          </button>
+        </div>
         <h2 className="title is-4">Add element</h2>
         <div className="shapes-wrapper">
           <ShapeBlock

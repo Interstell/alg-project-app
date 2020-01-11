@@ -28,3 +28,13 @@
 .dropdown-icon-right{
   margin-left: 5px;
 }
+
+.map-size-wrapper{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  input, p, button {
+    margin: 0 5px;
+  }
+}

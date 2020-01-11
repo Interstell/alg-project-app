@@ -3,7 +3,7 @@ import { Stage, Layer } from 'react-konva';
 
 import MapObject from './map-object';
 
-import { CANVAS_WIDTH, CANVAS_HEIGHT, ObjectTypes } from '../../constants';
+import { ObjectTypes } from '../../constants';
 
 class CanvasMap extends React.Component {
   constructor(props) {
@@ -55,13 +55,19 @@ class CanvasMap extends React.Component {
 
   render() {
     const { selectedId } = this.state;
-    const { shapes, isCaptureMode, stageRef } = this.props;
+    const {
+      shapes,
+      isCaptureMode,
+      canvasWidth,
+      canvasHeight,
+      stageRef
+    } = this.props;
     this.setStageHandlers();
 
     return (
       <Stage
-        width={CANVAS_WIDTH}
-        height={CANVAS_HEIGHT}
+        width={canvasWidth}
+        height={canvasHeight}
         ref={stageRef}
         onMouseDown={e => {
           const clickedOnEmpty = e.target === e.target.getStage();
@@ -80,6 +86,8 @@ class CanvasMap extends React.Component {
                 isSelected={attributes.id === selectedId}
                 isWithShadow={true}
                 isCaptureMode={isCaptureMode}
+                canvasWidth={canvasWidth}
+                canvasHeight={canvasHeight}
                 onSelect={e => {
                   if (
                     e.evt.button === 2 &&

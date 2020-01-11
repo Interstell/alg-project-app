@@ -1,7 +1,7 @@
 import React from 'react';
 import Konva from 'konva';
 import { Transformer } from 'react-konva';
-import { Line, Circle } from 'react-konva';
+import { Line, Ellipse } from 'react-konva';
 
 const MapObject = ({ Shape, ...rest }) => {
   if (Shape === Line) {
@@ -17,6 +17,8 @@ const MapShape = ({
   isSelected,
   isWithShadow,
   isCaptureMode,
+  canvasWidth,
+  canvasHeight,
   onSelect,
   onChange,
   onToForefront
@@ -87,6 +89,27 @@ const MapShape = ({
             height: Math.max(30, node.height() * scaleY)
           });
         }}
+        dragBoundFunc={({ x, y }) => {
+          if (shapeProps.radiusX) {
+            return {
+              x: Math.min(Math.max(20, x), canvasWidth - 20),
+              y: Math.min(Math.max(20, y), canvasHeight - 20)
+            };
+          } else if (shapeProps.width) {
+            return {
+              x: Math.min(
+                Math.max(-shapeProps.width / 2, x),
+                canvasWidth - shapeProps.width / 2
+              ),
+              y: Math.min(
+                Math.max(-shapeProps.height / 2, y),
+                canvasHeight - shapeProps.height / 2
+              )
+            };
+          } else {
+            return { x, y };
+          }
+        }}
       />
       {isSelected && !isCaptureMode && (
         <Transformer
@@ -107,6 +130,8 @@ const MapLine = ({
   shapeProps,
   isSelected,
   isCaptureMode,
+  canvasWidth,
+  canvasHeight,
   onSelect,
   onChange,
   onToForefront
@@ -138,6 +163,13 @@ const MapLine = ({
     });
   };
 
+  const dragBoundFunc = ({ x, y }) => {
+    return {
+      x: Math.min(Math.max(3, x), canvasWidth - 3),
+      y: Math.min(Math.max(3, y), canvasHeight - 3)
+    };
+  };
+
   return (
     <React.Fragment>
       <Line
@@ -148,23 +180,27 @@ const MapLine = ({
       />
       {shapeRef.current && isSelected && !isCaptureMode && (
         <React.Fragment>
-          <Circle
+          <Ellipse
             ref={anchor1Ref}
             x={shapeRef.current.points()[0]}
             y={shapeRef.current.points()[1]}
-            radius={7}
+            radiusX={7}
+            radiusY={7}
             fill="#00a1ff"
             draggable
+            dragBoundFunc={dragBoundFunc}
             onDragMove={updateLine}
             onDragEnd={onDragEnd}
           />
-          <Circle
+          <Ellipse
             ref={anchor2Ref}
             x={shapeRef.current.points()[2]}
             y={shapeRef.current.points()[3]}
-            radius={7}
+            radiusX={7}
+            radiusY={7}
             fill="#00a1ff"
             draggable
+            dragBoundFunc={dragBoundFunc}
             onDragMove={updateLine}
             onDragEnd={onDragEnd}
           />
