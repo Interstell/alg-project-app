@@ -6,7 +6,7 @@ import CanvasMap from './components/canvas-map/canvas-map';
 import MapEditor from './components/map-editor/map-editor';
 import { ObjectTypes, ObjectColors } from './constants';
 
-const CANVAS_INITIAL_WIDTH = 800;
+const CANVAS_INITIAL_WIDTH = 600;
 const CANVAS_INITIAL_HEIGHT = 600;
 
 const getInitialShapes = (canvasWidth, canvasHeight) => {

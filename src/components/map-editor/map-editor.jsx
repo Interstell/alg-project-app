@@ -70,8 +70,7 @@ class MapEditor extends React.Component {
     super(props);
     this.state = {
       isPathLoading: false,
-      editedCanvasWidth: props.canvasWidth,
-      editedCanvasHeight: props.canvasHeight
+      editedCanvasSize: props.canvasWidth
     };
   }
 
@@ -232,7 +231,7 @@ class MapEditor extends React.Component {
   };
 
   render() {
-    const { isPathLoading, editedCanvasWidth, editedCanvasHeight } = this.state;
+    const { isPathLoading, editedCanvasSize } = this.state;
     const { onCanvasSizeChanged } = this.props;
 
     return (
@@ -245,27 +244,15 @@ class MapEditor extends React.Component {
             min="100"
             max="1500"
             placeholder="Width"
-            value={editedCanvasWidth}
+            value={editedCanvasSize}
             onChange={e =>
-              this.setState({ editedCanvasWidth: Number(e.target.value) })
-            }
-          />
-          <p>x</p>
-          <input
-            className="input"
-            type="number"
-            min="100"
-            max="1500"
-            placeholder="Height"
-            value={editedCanvasHeight}
-            onChange={e =>
-              this.setState({ editedCanvasHeight: Number(e.target.value) })
+              this.setState({ editedCanvasSize: Number(e.target.value) })
             }
           />
           <button
             className="button is-link"
             onClick={() =>
-              onCanvasSizeChanged(editedCanvasWidth, editedCanvasHeight)
+              onCanvasSizeChanged(editedCanvasSize, editedCanvasSize)
             }
           >
             Save
