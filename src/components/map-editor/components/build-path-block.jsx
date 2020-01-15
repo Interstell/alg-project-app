@@ -53,7 +53,10 @@ const BuildPathBlock = ({
 
     const portalsA = shapes.filter(s => s.type === ObjectTypes.PortalA);
     portalsA.forEach(portalA => {
-      const portalB = portalA.target;
+      const portalB = shapes.find(s => s.attributes.id === portalA.targetId);
+      if (!portalB) {
+        return;
+      }
       const portalACoords = {
         x: Math.round(portalA.attributes.x * scaleFactor),
         y: Math.round(portalA.attributes.y * scaleFactor)

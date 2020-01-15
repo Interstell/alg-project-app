@@ -129,8 +129,8 @@ class MapEditor extends React.Component {
       ];
       Object.assign(portalB.attributes, { x, y });
 
-      portalA.target = portalB;
-      portalB.target = portalA;
+      portalA.targetId = portalB.attributes.id;
+      portalB.targetId = portalA.attributes.id;
 
       onShapesChanged([...shapes, portalA, portalB]);
     }
