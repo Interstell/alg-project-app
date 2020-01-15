@@ -59,12 +59,32 @@ const BuildPathBlock = ({
         return;
       }
       const portalACoords = {
-        x: Math.round(portalA.attributes.x * scaleFactor),
-        y: Math.round(portalA.attributes.y * scaleFactor)
+        x: Math.round(
+          Math.min(
+            Math.max(portalA.attributes.x + portalA.attributes.width / 2, 0),
+            canvasSize - 1
+          ) * scaleFactor
+        ),
+        y: Math.round(
+          Math.min(
+            Math.max(portalA.attributes.y + portalA.attributes.height / 2, 0),
+            canvasSize - 1
+          ) * scaleFactor
+        )
       };
       const portalBCoords = {
-        x: Math.round(portalB.attributes.x * scaleFactor),
-        y: Math.round(portalB.attributes.y * scaleFactor)
+        x: Math.round(
+          Math.min(
+            Math.max(portalB.attributes.x + portalB.attributes.width / 2, 0),
+            canvasSize - 1
+          ) * scaleFactor
+        ),
+        y: Math.round(
+          Math.min(
+            Math.max(portalB.attributes.y + portalB.attributes.height / 2, 0),
+            canvasSize - 1
+          ) * scaleFactor
+        )
       };
 
       for (
@@ -120,7 +140,6 @@ const BuildPathBlock = ({
     setExecutionTime(time);
     setPathLength(length);
     setIsLoading(false);
-    await onCaptureModeChanged(false);
   };
 
   return (
