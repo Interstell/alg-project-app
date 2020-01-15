@@ -74,15 +74,20 @@ const BuildPathBlock = ({
       };
 
       for (
-        let y = Math.max(portalA.attributes.y, 0);
+        let y = Math.round(Math.max(portalA.attributes.y, 0) * scaleFactor);
         y <
-        Math.min(portalA.attributes.y + portalA.attributes.height, canvasSize);
+        Math.min(portalA.attributes.y + portalA.attributes.height, canvasSize) *
+          scaleFactor;
         y++
       ) {
         for (
-          let x = Math.max(portalA.attributes.x, 0);
+          let x = Math.round(Math.max(portalA.attributes.x, 0) * scaleFactor);
           x <
-          Math.min(portalA.attributes.x + portalA.attributes.width, canvasSize);
+          Math.min(
+            portalA.attributes.x + portalA.attributes.width,
+            canvasSize
+          ) *
+            scaleFactor;
           x++
         ) {
           codeMatrix[y][x] = [portalBCoords.y, portalBCoords.x];
