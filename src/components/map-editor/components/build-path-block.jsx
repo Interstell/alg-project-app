@@ -125,12 +125,12 @@ const BuildPathBlock = ({
     const { path, length, time } = await API.getPathForMatrix({
       matrix: codeMatrix,
       start: [
-        Math.round(startShape.attributes.x * scaleFactor),
-        Math.round(startShape.attributes.y * scaleFactor)
+        Math.round(startShape.attributes.y * scaleFactor),
+        Math.round(startShape.attributes.x * scaleFactor)
       ],
       end: [
-        Math.round(finishShape.attributes.x * scaleFactor),
-        Math.round(finishShape.attributes.y * scaleFactor)
+        Math.round(finishShape.attributes.y * scaleFactor),
+        Math.round(finishShape.attributes.x * scaleFactor)
       ],
       algorithm,
       metric: chosenMetric
