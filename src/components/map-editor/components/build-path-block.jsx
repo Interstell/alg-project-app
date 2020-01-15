@@ -13,6 +13,7 @@ import API from '../../../api';
 const BuildPathBlock = ({
   algorithm,
   shapes,
+  canvasSize,
   onShapesChanged,
   onCaptureModeChanged,
   onBuildCodeMatrix
@@ -50,7 +51,7 @@ const BuildPathBlock = ({
     shapes = await removePath();
     const scaleFactor = algorithm === Algorithms.Dijkstra ? 0.5 : 1;
     const codeMatrix = await onBuildCodeMatrix({ scaleFactor });
-
+    onCaptureModeChanged(false);
     const portalsA = shapes.filter(s => s.type === ObjectTypes.PortalA);
     portalsA.forEach(portalA => {
       const portalB = shapes.find(s => s.attributes.id === portalA.targetId);
@@ -65,14 +66,38 @@ const BuildPathBlock = ({
         x: Math.round(portalB.attributes.x * scaleFactor),
         y: Math.round(portalB.attributes.y * scaleFactor)
       };
-      codeMatrix[portalACoords.y][portalACoords.x] = [
-        portalBCoords.y,
-        portalBCoords.x
-      ];
-      codeMatrix[portalBCoords.y][portalBCoords.x] = [
-        portalACoords.y,
-        portalACoords.x
-      ];
+
+      for (
+        let y = Math.max(portalA.attributes.y, 0);
+        y <
+        Math.min(portalA.attributes.y + portalA.attributes.height, canvasSize);
+        y++
+      ) {
+        for (
+          let x = Math.max(portalA.attributes.x, 0);
+          x <
+          Math.min(portalA.attributes.x + portalA.attributes.width, canvasSize);
+          x++
+        ) {
+          codeMatrix[y][x] = [portalBCoords.y, portalBCoords.x];
+        }
+      }
+
+      for (
+        let y = Math.max(portalB.attributes.y, 0);
+        y <
+        Math.min(portalB.attributes.y + portalB.attributes.height, canvasSize);
+        y++
+      ) {
+        for (
+          let x = Math.max(portalB.attributes.x, 0);
+          x <
+          Math.min(portalB.attributes.x + portalB.attributes.width, canvasSize);
+          x++
+        ) {
+          codeMatrix[y][x] = [portalACoords.y, portalACoords.x];
+        }
+      }
     });
 
     const startShape = shapes.find(s => s.type === ObjectTypes.Start);

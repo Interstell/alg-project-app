@@ -108,8 +108,8 @@ class MapEditor extends React.Component {
           stroke: ObjectColors[ObjectTypes.PortalA].hex,
           x: _.random(50, canvasWidth - 100),
           y: _.random(50, canvasHeight - 100),
-          radiusX: 35,
-          radiusY: 60,
+          width: 60,
+          height: 110,
           id: 'portalA' + _.random(100000)
         }
       };
@@ -200,8 +200,9 @@ class MapEditor extends React.Component {
   render() {
     const { editedCanvasSize, algorithm } = this.state;
     const {
-      onCanvasSizeChanged,
       shapes,
+      canvasWidth,
+      onCanvasSizeChanged,
       onCaptureModeChanged,
       onShapesChanged
     } = this.props;
@@ -257,7 +258,7 @@ class MapEditor extends React.Component {
               <p>Portal</p>
               <button
                 className="button"
-                onClick={() => this.onObjectChosen(ObjectTypes.Portal, Ellipse)}
+                onClick={() => this.onObjectChosen(ObjectTypes.Portal, Rect)}
               >
                 <FontAwesomeIcon className="dropdown-icon" icon={faCircle} />
                 <span className="add-portal-btn-txt">Add portal</span>
@@ -280,6 +281,7 @@ class MapEditor extends React.Component {
               <BuildPathBlock
                 algorithm={Algorithms.AStar}
                 shapes={shapes}
+                canvasSize={canvasWidth}
                 onShapesChanged={onShapesChanged}
                 onCaptureModeChanged={onCaptureModeChanged}
                 onBuildCodeMatrix={this.buildCodeMatrix}
@@ -293,6 +295,7 @@ class MapEditor extends React.Component {
               <BuildPathBlock
                 algorithm={Algorithms.Dijkstra}
                 shapes={shapes}
+                canvasSize={canvasWidth}
                 onShapesChanged={onShapesChanged}
                 onCaptureModeChanged={onCaptureModeChanged}
                 onBuildCodeMatrix={this.buildCodeMatrix}
@@ -306,6 +309,7 @@ class MapEditor extends React.Component {
               <BuildPathBlock
                 algorithm={Algorithms.BestFirst}
                 shapes={shapes}
+                canvasSize={canvasWidth}
                 onShapesChanged={onShapesChanged}
                 onCaptureModeChanged={onCaptureModeChanged}
                 onBuildCodeMatrix={this.buildCodeMatrix}
