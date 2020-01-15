@@ -58,20 +58,6 @@ const BuildPathBlock = ({
       if (!portalB) {
         return;
       }
-      const portalACoords = {
-        x: Math.round(
-          Math.min(
-            Math.max(portalA.attributes.x + portalA.attributes.width / 2, 0),
-            canvasSize - 1
-          ) * scaleFactor
-        ),
-        y: Math.round(
-          Math.min(
-            Math.max(portalA.attributes.y + portalA.attributes.height / 2, 0),
-            canvasSize - 1
-          ) * scaleFactor
-        )
-      };
       const portalBCoords = {
         x: Math.round(
           Math.min(
@@ -100,22 +86,6 @@ const BuildPathBlock = ({
           x++
         ) {
           codeMatrix[y][x] = [portalBCoords.y, portalBCoords.x];
-        }
-      }
-
-      for (
-        let y = Math.max(portalB.attributes.y, 0);
-        y <
-        Math.min(portalB.attributes.y + portalB.attributes.height, canvasSize);
-        y++
-      ) {
-        for (
-          let x = Math.max(portalB.attributes.x, 0);
-          x <
-          Math.min(portalB.attributes.x + portalB.attributes.width, canvasSize);
-          x++
-        ) {
-          codeMatrix[y][x] = [portalACoords.y, portalACoords.x];
         }
       }
     });
