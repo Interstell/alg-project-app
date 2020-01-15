@@ -48,3 +48,29 @@ export const ObjectCodes = {
   [ObjectTypes.Swamp]: 2,
   [ObjectTypes.Sea]: 4
 };
+
+export const Algorithms = {
+  AStar: 'astar',
+  BestFirst: 'bf',
+  Dijkstra: 'dijkstra'
+};
+
+export const AlgorithmColors = {
+  [Algorithms.AStar]: {
+    buttonClass: 'is-success',
+    hex: '#48c774'
+  },
+  [Algorithms.Dijkstra]: {
+    buttonClass: 'is-warning',
+    hex: '#ffdd57'
+  },
+  [Algorithms.BestFirst]: {
+    buttonClass: 'is-danger',
+    hex: '#ff3860'
+  }
+};
+
+export const Metrics = {
+  Euclidean: 'euclid',
+  Manhattan: 'manhattan'
+};

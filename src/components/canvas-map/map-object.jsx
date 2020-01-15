@@ -21,7 +21,8 @@ const MapShape = ({
   canvasHeight,
   onSelect,
   onChange,
-  onToForefront
+  onToForefront,
+  onObjectMoved
 }) => {
   const shapeRef = React.useRef();
   const trRef = React.useRef();
@@ -34,6 +35,7 @@ const MapShape = ({
   }, [Shape, isSelected, isCaptureMode]);
 
   const handleDragStart = e => {
+    onObjectMoved();
     e.target.setAttrs({
       shadowOffset: {
         x: 7,
@@ -134,7 +136,8 @@ const MapLine = ({
   canvasHeight,
   onSelect,
   onChange,
-  onToForefront
+  onToForefront,
+  onObjectMoved
 }) => {
   const shapeRef = React.useRef();
 
@@ -189,6 +192,7 @@ const MapLine = ({
             fill="#00a1ff"
             draggable
             dragBoundFunc={dragBoundFunc}
+            onDragStart={onObjectMoved}
             onDragMove={updateLine}
             onDragEnd={onDragEnd}
           />
@@ -201,6 +205,7 @@ const MapLine = ({
             fill="#00a1ff"
             draggable
             dragBoundFunc={dragBoundFunc}
+            onDragStart={onObjectMoved}
             onDragMove={updateLine}
             onDragEnd={onDragEnd}
           />

@@ -53,6 +53,11 @@ class CanvasMap extends React.Component {
     }
   };
 
+  onObjectMoved = () => {
+    const { shapes, onShapesChanged } = this.props;
+    onShapesChanged(shapes.filter(s => s.type !== ObjectTypes.Path));
+  };
+
   render() {
     const { selectedId } = this.state;
     const {
@@ -105,6 +110,7 @@ class CanvasMap extends React.Component {
                 onChange={newAttrs => {
                   this.setShapeAttributes(i, newAttrs);
                 }}
+                onObjectMoved={this.onObjectMoved}
               />
             );
           })}

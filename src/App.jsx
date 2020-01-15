@@ -6,8 +6,8 @@ import CanvasMap from './components/canvas-map/canvas-map';
 import MapEditor from './components/map-editor/map-editor';
 import { ObjectTypes, ObjectColors } from './constants';
 
-const CANVAS_INITIAL_WIDTH = 600;
-const CANVAS_INITIAL_HEIGHT = 600;
+const CANVAS_INITIAL_WIDTH = 650;
+const CANVAS_INITIAL_HEIGHT = 650;
 
 const getInitialShapes = (canvasWidth, canvasHeight) => {
   return [
@@ -47,12 +47,16 @@ class App extends React.Component {
     canvasHeight: CANVAS_INITIAL_HEIGHT
   };
 
-  onShapesChanged = (newShapes, cb = () => {}) => {
-    this.setState({ shapes: newShapes }, cb);
+  onShapesChanged = async newShapes => {
+    return new Promise(resolve => {
+      this.setState({ shapes: newShapes }, resolve);
+    });
   };
 
-  onCaptureModeChanged = (captureMode, cb = () => {}) => {
-    this.setState({ isCaptureMode: captureMode }, cb);
+  onCaptureModeChanged = captureMode => {
+    return new Promise(resolve => {
+      this.setState({ isCaptureMode: captureMode }, resolve);
+    });
   };
 
   onCanvasSizeChanged = (width, height) => {
@@ -83,7 +87,7 @@ class App extends React.Component {
                 Shortest Path Map Builder
               </h1>
               <div className="columns">
-                <div className="column is-one-quarter">
+                <div className="column is-one-third">
                   <MapEditor
                     shapes={shapes}
                     isCaptureMode={isCaptureMode}
@@ -95,7 +99,7 @@ class App extends React.Component {
                     stageRef={stageRef}
                   />
                 </div>
-                <div className="column is-three-quarters canvas-block">
+                <div className="column is-two-thirds canvas-block">
                   <CanvasMap
                     shapes={shapes}
                     canvasWidth={canvasWidth}

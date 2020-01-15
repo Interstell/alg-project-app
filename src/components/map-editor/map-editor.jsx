@@ -1,61 +1,18 @@
 import React from 'react';
 import { Rect, Ellipse, Line } from 'react-konva';
 import _ from 'lodash';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {
-  faShapes,
-  faAngleDown,
-  faGripLines
-} from '@fortawesome/free-solid-svg-icons';
-import { faSquare, faCircle } from '@fortawesome/free-regular-svg-icons';
-import API from '../../api';
+import classNames from 'classnames';
 
 import './map-editor.scss';
-import { ObjectTypes, ObjectColors, ObjectCodes } from '../../constants';
-
-const ShapeBlock = ({ name, onShapeChosen }) => (
-  <div className="shapes-block">
-    <p>{name}</p>
-    <div className="dropdown is-hoverable">
-      <div className="dropdown-trigger">
-        <button
-          className="button"
-          aria-haspopup="true"
-          aria-controls="dropdown-menu4"
-        >
-          <FontAwesomeIcon className="dropdown-icon" icon={faShapes} />
-          <span>Choose shape</span>
-          <FontAwesomeIcon className="dropdown-icon-right" icon={faAngleDown} />
-        </button>
-      </div>
-      <div className="dropdown-menu" role="menu">
-        <div className="dropdown-content">
-          <div
-            className="dropdown-item shape-item-block"
-            onClick={() => onShapeChosen(Rect)}
-          >
-            <FontAwesomeIcon className="dropdown-icon" icon={faSquare} />
-            <p>Rectangle</p>
-          </div>
-          <div
-            className="dropdown-item shape-item-block"
-            onClick={() => onShapeChosen(Ellipse)}
-          >
-            <FontAwesomeIcon className="dropdown-icon" icon={faCircle} />
-            <p>Ellipse</p>
-          </div>
-          <div
-            className="dropdown-item shape-item-block"
-            onClick={() => onShapeChosen(Line)}
-          >
-            <FontAwesomeIcon className="dropdown-icon" icon={faGripLines} />
-            <p>Line</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-);
+import {
+  ObjectTypes,
+  ObjectColors,
+  ObjectCodes,
+  Algorithms
+} from '../../constants';
+import AddShapeBlock from './components/add-shape-block';
+import BuildPathBlock from './components/build-path-block';
+import AlgorithmTabs from './components/algorithm-tabs';
 
 function getColorsForPixel(imageData, x, y) {
   return [
@@ -65,12 +22,22 @@ function getColorsForPixel(imageData, x, y) {
   ];
 }
 
+function createImage(base64) {
+  return new Promise(resolve => {
+    const image = document.createElement('img');
+    image.src = base64;
+    image.onload = function() {
+      resolve(image);
+    };
+  });
+}
+
 class MapEditor extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      isPathLoading: false,
-      editedCanvasSize: props.canvasWidth
+      editedCanvasSize: props.canvasWidth,
+      algorithm: Algorithms.AStar
     };
   }
 
@@ -145,17 +112,39 @@ class MapEditor extends React.Component {
     onShapesChanged([...shapes, object]);
   };
 
-  buildCodeMatrix = () => {
+  buildCodeMatrix = async ({ scaleFactor = 1 } = {}) => {
     const { canvasWidth, canvasHeight, stageRef } = this.props;
-    const imageData = stageRef.current
-      .toCanvas()
-      .getContext('2d')
-      .getImageData(0, 0, canvasWidth, canvasHeight);
+
+    let imageData;
+
+    const scaledWidth = canvasWidth * scaleFactor;
+    const scaledHeight = canvasHeight * scaleFactor;
+
+    if (scaleFactor === 1) {
+      imageData = stageRef.current
+        .toCanvas()
+        .getContext('2d')
+        .getImageData(0, 0, canvasWidth, canvasHeight);
+    } else {
+      const image = await createImage(
+        stageRef.current.toDataURL({
+          pixelRatio: scaleFactor
+        })
+      );
+
+      const canvas = document.createElement('canvas');
+      canvas.width = scaledWidth;
+      canvas.height = scaledHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(image, 0, 0, scaledWidth, scaledHeight);
+
+      imageData = ctx.getImageData(0, 0, scaledWidth, scaledHeight);
+    }
 
     const colorMatrix = [];
-    for (let x = 0; x < canvasWidth; x++) {
+    for (let x = 0; x < scaledWidth; x++) {
       const row = [];
-      for (let y = 0; y < canvasHeight; y++) {
+      for (let y = 0; y < scaledHeight; y++) {
         row.push(getColorsForPixel(imageData, x, y));
       }
       colorMatrix.push(row);
@@ -176,115 +165,120 @@ class MapEditor extends React.Component {
           } else return 1;
         }
       }),
-      canvasWidth
+      scaledWidth
     );
   };
 
-  removePath = cb => {
-    const { shapes, onShapesChanged } = this.props;
-    onShapesChanged(
-      shapes.filter(s => s.type !== ObjectTypes.Path),
-      cb
-    );
-  };
-
-  drawBuiltPath = path => {
-    const { shapes, onShapesChanged } = this.props;
-
-    const segments = path.map(segment => ({
-      shape: Line,
-      type: ObjectTypes.Path,
-      attributes: {
-        points: _.flatten(segment),
-        stroke: '#FF5722',
-        strokeWidth: 3,
-        id: 'path' + _.random(10000)
-      }
-    }));
-
-    onShapesChanged([...shapes, ...segments]);
-  };
-
-  onBuildPathButtonClicked = async () => {
-    const { shapes, onCaptureModeChanged } = this.props;
-
-    onCaptureModeChanged(true, async () => {
-      this.setState({ isPathLoading: true });
-      this.removePath(async () => {
-        const codeMatrix = this.buildCodeMatrix();
-
-        const startShape = shapes.find(s => s.type === ObjectTypes.Start);
-        const finishShape = shapes.find(s => s.type === ObjectTypes.Finish);
-        const path = await API.getPathForMatrix({
-          matrix: codeMatrix,
-          start: [startShape.attributes.x, startShape.attributes.y],
-          end: [finishShape.attributes.x, finishShape.attributes.y]
-        });
-
-        this.drawBuiltPath(path);
-
-        this.setState({ isPathLoading: false });
-
-        onCaptureModeChanged(false);
-      });
-    });
+  onAlgorithmChanged = algorithm => {
+    this.setState({ algorithm });
   };
 
   render() {
-    const { isPathLoading, editedCanvasSize } = this.state;
-    const { onCanvasSizeChanged } = this.props;
+    const { editedCanvasSize, algorithm } = this.state;
+    const {
+      onCanvasSizeChanged,
+      shapes,
+      onCaptureModeChanged,
+      onShapesChanged
+    } = this.props;
 
     return (
       <React.Fragment>
-        <h2 className="title is-4">Map size</h2>
-        <div className="map-size-wrapper">
-          <input
-            className="input"
-            type="number"
-            min="100"
-            max="1500"
-            placeholder="Width"
-            value={editedCanvasSize}
-            onChange={e =>
-              this.setState({ editedCanvasSize: Number(e.target.value) })
-            }
-          />
-          <button
-            className="button is-link"
-            onClick={() =>
-              onCanvasSizeChanged(editedCanvasSize, editedCanvasSize)
-            }
-          >
-            Save
-          </button>
+        <div className="box">
+          <div className="map-size-wrapper">
+            <p>Map size</p>
+            <input
+              className="input"
+              type="number"
+              min="100"
+              max="1500"
+              placeholder="Width"
+              value={editedCanvasSize}
+              onChange={e =>
+                this.setState({ editedCanvasSize: Number(e.target.value) })
+              }
+            />
+            <button
+              className="button is-link"
+              onClick={() =>
+                onCanvasSizeChanged(editedCanvasSize, editedCanvasSize)
+              }
+            >
+              Save
+            </button>
+          </div>
         </div>
-        <h2 className="title is-4">Add element</h2>
-        <div className="shapes-wrapper">
-          <ShapeBlock
-            name={ObjectTypes.Block}
-            onShapeChosen={shape =>
-              this.onObjectChosen(ObjectTypes.Block, shape)
-            }
-          />
-          <ShapeBlock
-            name={ObjectTypes.Sea}
-            onShapeChosen={shape => this.onObjectChosen(ObjectTypes.Sea, shape)}
-          />
-          <ShapeBlock
-            name={ObjectTypes.Swamp}
-            onShapeChosen={shape =>
-              this.onObjectChosen(ObjectTypes.Swamp, shape)
-            }
-          />
+
+        <div className="box">
+          <div className="shapes-wrapper">
+            <AddShapeBlock
+              name="Block"
+              onShapeChosen={shape =>
+                this.onObjectChosen(ObjectTypes.Block, shape)
+              }
+            />
+            <AddShapeBlock
+              name="Swamp (2x slower)"
+              onShapeChosen={shape =>
+                this.onObjectChosen(ObjectTypes.Swamp, shape)
+              }
+            />
+            <AddShapeBlock
+              name="Sea (4x slower)"
+              onShapeChosen={shape =>
+                this.onObjectChosen(ObjectTypes.Sea, shape)
+              }
+            />
+          </div>
         </div>
-        <button
-          className={
-            'button is-medium is-info ' + (isPathLoading ? 'is-loading' : '')
-          }
-          onClick={this.onBuildPathButtonClicked}
-        >
-          Build path
-        </button>
+
+        <div className="box">
+          <div className="algorithm-choice-block">
+            <AlgorithmTabs
+              algorithm={algorithm}
+              onAlgorithmChanged={this.onAlgorithmChanged}
+            />
+            <div
+              className={classNames({
+                'is-hidden': algorithm !== Algorithms.AStar
+              })}
+            >
+              <BuildPathBlock
+                algorithm={Algorithms.AStar}
+                shapes={shapes}
+                onShapesChanged={onShapesChanged}
+                onCaptureModeChanged={onCaptureModeChanged}
+                onBuildCodeMatrix={this.buildCodeMatrix}
+              />
+            </div>
+            <div
+              className={classNames({
+                'is-hidden': algorithm !== Algorithms.Dijkstra
+              })}
+            >
+              <BuildPathBlock
+                algorithm={Algorithms.Dijkstra}
+                shapes={shapes}
+                onShapesChanged={onShapesChanged}
+                onCaptureModeChanged={onCaptureModeChanged}
+                onBuildCodeMatrix={this.buildCodeMatrix}
+              />
+            </div>
+            <div
+              className={classNames({
+                'is-hidden': algorithm !== Algorithms.BestFirst
+              })}
+            >
+              <BuildPathBlock
+                algorithm={Algorithms.BestFirst}
+                shapes={shapes}
+                onShapesChanged={onShapesChanged}
+                onCaptureModeChanged={onCaptureModeChanged}
+                onBuildCodeMatrix={this.buildCodeMatrix}
+              />
+            </div>
+          </div>
+        </div>
       </React.Fragment>
     );
   }
