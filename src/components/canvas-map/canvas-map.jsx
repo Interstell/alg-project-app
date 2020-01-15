@@ -19,7 +19,12 @@ class CanvasMap extends React.Component {
 
   deleteShape = id => {
     const { shapes, onShapesChanged } = this.props;
-    onShapesChanged(shapes.filter(s => s.attributes.id !== id));
+    const shape = shapes.find(s => s.attributes.id === id);
+    let newShapes = shapes.filter(s => s.attributes.id !== shape.attributes.id);
+    if (shape.targetId) {
+      newShapes = newShapes.filter(s => s.attributes.id !== shape.targetId);
+    }
+    onShapesChanged(newShapes);
   };
 
   setShapeAttributes = (index, attributes) => {

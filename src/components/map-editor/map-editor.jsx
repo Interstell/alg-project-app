@@ -8,6 +8,7 @@ import {
   ObjectTypes,
   ObjectColors,
   ObjectCodes,
+  ObjectTextures,
   Algorithms
 } from '../../constants';
 import AddShapeBlock from './components/add-shape-block';
@@ -24,10 +25,10 @@ function getColorsForPixel(imageData, x, y) {
   ];
 }
 
-function createImage(base64) {
+function createImage(src) {
   return new Promise(resolve => {
     const image = document.createElement('img');
-    image.src = base64;
+    image.src = src;
     image.onload = function() {
       resolve(image);
     };
@@ -39,19 +40,40 @@ class MapEditor extends React.Component {
     super(props);
     this.state = {
       editedCanvasSize: props.canvasWidth,
-      algorithm: Algorithms.AStar
+      algorithm: Algorithms.AStar,
+      textures: {}
     };
+  }
+
+  async loadTextures() {
+    const textures = await Promise.all(
+      Object.entries(ObjectTextures).map(async ([type, texturePath]) => ({
+        [type]: await createImage(texturePath)
+      }))
+    );
+    return _.merge({}, ...textures);
+  }
+
+  componentDidMount() {
+    this.loadTextures()
+      .then(textures => {
+        this.setState({ textures });
+      })
+      .catch(console.error);
   }
 
   onObjectChosen = (type, shape) => {
     const { shapes, onShapesChanged, canvasWidth, canvasHeight } = this.props;
+    const { textures } = this.state;
 
     if (type !== ObjectTypes.Portal) {
       let object;
       const attributes = {
+        fillPatternImage: textures[type],
         fill: ObjectColors[type].hex,
         stroke: ObjectColors[type].hex
       };
+
       switch (shape) {
         case Rect:
           object = {
@@ -104,13 +126,16 @@ class MapEditor extends React.Component {
         shape,
         type: ObjectTypes.PortalA,
         attributes: {
-          fill: ObjectColors[ObjectTypes.PortalA].hex,
-          stroke: ObjectColors[ObjectTypes.PortalA].hex,
+          fillPatternImage: textures[ObjectTypes.PortalA],
+          fillPatternScale: {
+            x: 0.2,
+            y: 0.2
+          },
           x: _.random(50, canvasWidth - 100),
           y: _.random(50, canvasHeight - 100),
-          width: 60,
-          height: 110,
-          id: 'portalA' + _.random(100000)
+          width: 64,
+          height: 96,
+          id: 'portalATexture' + _.random(100000)
         }
       };
       const portalB = {
@@ -118,9 +143,8 @@ class MapEditor extends React.Component {
         type: ObjectTypes.PortalB,
         attributes: {
           ...portalA.attributes,
-          fill: ObjectColors[ObjectTypes.PortalB].hex,
-          stroke: ObjectColors[ObjectTypes.PortalB].hex,
-          id: 'portalB' + _.random(100000)
+          fillPatternImage: textures[ObjectTypes.PortalB],
+          id: 'portalBTexture' + _.random(100000)
         }
       };
       const [x, y] = [

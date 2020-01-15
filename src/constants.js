@@ -1,3 +1,9 @@
+import blockTexture from './assets/textures/block.jpg';
+import swampTexture from './assets/textures/swamp.jpg';
+import seaTexture from './assets/textures/sea.jpg';
+import portalATexture from './assets/textures/portalA.png';
+import portalBTexture from './assets/textures/portalB.png';
+
 export const ObjectTypes = {
   Start: 'Start',
   Finish: 'Finish',
@@ -64,6 +70,14 @@ export const ObjectCodes = {
   [ObjectTypes.Sea]: 4,
   [ObjectTypes.PortalA]: 1,
   [ObjectTypes.PortalB]: 1
+};
+
+export const ObjectTextures = {
+  [ObjectTypes.Block]: blockTexture,
+  [ObjectTypes.Swamp]: swampTexture,
+  [ObjectTypes.Sea]: seaTexture,
+  [ObjectTypes.PortalA]: portalATexture,
+  [ObjectTypes.PortalB]: portalBTexture
 };
 
 export const Algorithms = {

@@ -1,7 +1,6 @@
 import React from 'react';
 import Konva from 'konva';
-import { Transformer } from 'react-konva';
-import { Line, Ellipse } from 'react-konva';
+import { Transformer, Line, Ellipse } from 'react-konva';
 
 const MapObject = ({ Shape, ...rest }) => {
   if (Shape === Line) {
@@ -28,11 +27,16 @@ const MapShape = ({
   const trRef = React.useRef();
 
   React.useEffect(() => {
-    if (isSelected && !isCaptureMode && Shape !== Line) {
+    if (
+      isSelected &&
+      !isCaptureMode &&
+      Shape !== Line &&
+      !shapeProps.fillPatternScale
+    ) {
       trRef.current.setNode(shapeRef.current);
       trRef.current.getLayer().batchDraw();
     }
-  }, [Shape, isSelected, isCaptureMode]);
+  }, [Shape, isSelected, isCaptureMode, shapeProps.fillPatternScale]);
 
   const handleDragStart = e => {
     onObjectMoved();
@@ -65,13 +69,34 @@ const MapShape = ({
     ? { shadowBlur: 10, shadowOpacity: 0.4 }
     : {};
 
+  const {
+    fillPatternImage,
+    fillPatternScale,
+    fill,
+    stroke,
+    ...otherShapeProps
+  } = shapeProps;
+  let fillProps;
+  if (!isCaptureMode && fillPatternImage) {
+    fillProps = {
+      fillPatternImage,
+      ...(fillPatternScale ? { fillPatternScale } : {})
+    };
+  } else {
+    fillProps = {
+      fill,
+      stroke
+    };
+  }
+
   return (
     <React.Fragment>
       <Shape
         onClick={onSelect}
         ref={shapeRef}
         {...shadowProps}
-        {...shapeProps}
+        {...fillProps}
+        {...otherShapeProps}
         draggable
         onDblClick={onToForefront}
         onDragStart={handleDragStart}
@@ -113,7 +138,7 @@ const MapShape = ({
           }
         }}
       />
-      {isSelected && !isCaptureMode && (
+      {isSelected && !isCaptureMode && !fillPatternScale && (
         <Transformer
           ref={trRef}
           boundBoxFunc={(oldBox, newBox) => {
