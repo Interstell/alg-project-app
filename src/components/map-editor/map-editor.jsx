@@ -190,9 +190,9 @@ class MapEditor extends React.Component {
     }
 
     const colorMatrix = [];
-    for (let x = 0; x < scaledWidth; x++) {
+    for (let y = 0; y < scaledHeight; y++) {
       const row = [];
-      for (let y = 0; y < scaledHeight; y++) {
+      for (let x = 0; x < scaledWidth; x++) {
         row.push(getColorsForPixel(imageData, x, y));
       }
       colorMatrix.push(row);
