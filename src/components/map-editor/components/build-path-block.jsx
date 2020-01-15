@@ -117,6 +117,9 @@ const BuildPathBlock = ({
     setIsLoading(false);
   };
 
+  const length =
+    algorithm === Algorithms.Dijkstra ? pathLength * 2 : pathLength;
+
   return (
     <React.Fragment>
       <div className="path-characteristics">
@@ -143,9 +146,7 @@ const BuildPathBlock = ({
             </label>
           </div>
         </div>
-        <p>
-          Path length: {(pathLength && pathLength.toFixed(2) + ' px') || ''}
-        </p>
+        <p>Path length: {(pathLength && length.toFixed(2) + ' px') || ''}</p>
         <p>
           Execution time:{' '}
           {(executionTime && (executionTime / 1000).toFixed(2) + ' sec') || ''}
