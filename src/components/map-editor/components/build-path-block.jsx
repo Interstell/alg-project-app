@@ -66,12 +66,12 @@ const BuildPathBlock = ({
         y: Math.round(portalB.attributes.y * scaleFactor)
       };
       codeMatrix[portalACoords.y][portalACoords.x] = [
-        portalBCoords.x,
-        portalBCoords.y
+        portalBCoords.y,
+        portalBCoords.x
       ];
       codeMatrix[portalBCoords.y][portalBCoords.x] = [
-        portalACoords.x,
-        portalACoords.y
+        portalACoords.y,
+        portalACoords.x
       ];
     });
 
