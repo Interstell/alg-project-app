@@ -51,6 +51,27 @@ const BuildPathBlock = ({
     const scaleFactor = algorithm === Algorithms.Dijkstra ? 0.5 : 1;
     const codeMatrix = await onBuildCodeMatrix({ scaleFactor });
 
+    const portalsA = shapes.filter(s => s.type === ObjectTypes.PortalA);
+    portalsA.forEach(portalA => {
+      const portalB = portalA.target;
+      const portalACoords = {
+        x: Math.round(portalA.attributes.x * scaleFactor),
+        y: Math.round(portalA.attributes.y * scaleFactor)
+      };
+      const portalBCoords = {
+        x: Math.round(portalB.attributes.x * scaleFactor),
+        y: Math.round(portalB.attributes.y * scaleFactor)
+      };
+      codeMatrix[portalACoords.y][portalACoords.x] = [
+        portalBCoords.x,
+        portalBCoords.y
+      ];
+      codeMatrix[portalBCoords.y][portalBCoords.x] = [
+        portalACoords.x,
+        portalACoords.y
+      ];
+    });
+
     const startShape = shapes.find(s => s.type === ObjectTypes.Start);
     const finishShape = shapes.find(s => s.type === ObjectTypes.Finish);
     const { path, length, time } = await API.getPathForMatrix({

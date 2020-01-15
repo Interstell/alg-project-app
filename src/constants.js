@@ -4,6 +4,9 @@ export const ObjectTypes = {
   Block: 'Block',
   Sea: 'Sea',
   Swamp: 'Swamp',
+  Portal: 'Portal',
+  PortalA: 'PortalA',
+  PortalB: 'PortalB',
   Path: 'Path'
 };
 
@@ -37,6 +40,18 @@ export const ObjectColors = {
     g: 195,
     b: 74,
     hex: '#8bc34a'
+  },
+  [ObjectTypes.PortalA]: {
+    r: 255,
+    g: 154,
+    b: 0,
+    hex: '#ff9a00'
+  },
+  [ObjectTypes.PortalB]: {
+    r: 39,
+    g: 167,
+    b: 216,
+    hex: '#27a7d8'
   }
 };
 
@@ -46,7 +61,9 @@ export const ObjectCodes = {
   [ObjectTypes.Path]: 1,
   [ObjectTypes.Block]: -1,
   [ObjectTypes.Swamp]: 2,
-  [ObjectTypes.Sea]: 4
+  [ObjectTypes.Sea]: 4,
+  [ObjectTypes.PortalA]: 1,
+  [ObjectTypes.PortalB]: 1
 };
 
 export const Algorithms = {

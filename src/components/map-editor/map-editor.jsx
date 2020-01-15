@@ -13,6 +13,8 @@ import {
 import AddShapeBlock from './components/add-shape-block';
 import BuildPathBlock from './components/build-path-block';
 import AlgorithmTabs from './components/algorithm-tabs';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCircle } from '@fortawesome/free-regular-svg-icons';
 
 function getColorsForPixel(imageData, x, y) {
   return [
@@ -44,72 +46,94 @@ class MapEditor extends React.Component {
   onObjectChosen = (type, shape) => {
     const { shapes, onShapesChanged, canvasWidth, canvasHeight } = this.props;
 
-    let object;
-    const attributes = {};
-    switch (type) {
-      case ObjectTypes.Block:
-        attributes.fill = ObjectColors.Block.hex;
-        attributes.stroke = ObjectColors.Block.hex;
-        break;
-      case ObjectTypes.Sea:
-        attributes.fill = ObjectColors.Sea.hex;
-        attributes.stroke = ObjectColors.Sea.hex;
-        break;
-      case ObjectTypes.Swamp:
-        attributes.fill = ObjectColors.Swamp.hex;
-        attributes.stroke = ObjectColors.Swamp.hex;
-        break;
-      default:
-        break;
-    }
-    switch (shape) {
-      case Rect:
-        object = {
-          shape,
-          attributes: {
-            ...attributes,
-            x: _.random(50, canvasWidth - 100),
-            y: _.random(50, canvasHeight - 100),
-            width: 100 + (Math.random() - 0.5) * _.random(100),
-            height: 100 + (Math.random() - 0.5) * _.random(100),
-            id: 'rect' + _.random(100000)
-          }
-        };
-        break;
-      case Ellipse:
-        object = {
-          shape,
-          attributes: {
-            ...attributes,
-            x: _.random(50, canvasWidth - 100),
-            y: _.random(50, canvasHeight - 100),
-            radiusX: 75 + (Math.random() - 0.5) * _.random(50),
-            radiusY: 75 + (Math.random() - 0.5) * _.random(50),
-            id: 'ellipse' + _.random(100000)
-          }
-        };
-        break;
-      case Line:
-        object = {
-          shape,
-          attributes: {
-            ...attributes,
-            points: [
-              _.random(50, Math.round(canvasWidth / 2) - 50), // x1
-              _.random(50, Math.round(canvasHeight / 2) - 50), // y1
-              _.random(Math.round(canvasWidth / 2) + 50, canvasWidth - 50), // x2
-              _.random(Math.round(canvasHeight / 2) + 50, canvasHeight - 50) //  y2
-            ],
-            strokeWidth: 5,
-            id: 'line' + _.random(100000)
-          }
-        };
-        break;
-      default:
-        break;
-    }
+    if (type !== ObjectTypes.Portal) {
+      let object;
+      const attributes = {
+        fill: ObjectColors[type].hex,
+        stroke: ObjectColors[type].hex
+      };
+      switch (shape) {
+        case Rect:
+          object = {
+            shape,
+            attributes: {
+              ...attributes,
+              x: _.random(50, canvasWidth - 100),
+              y: _.random(50, canvasHeight - 100),
+              width: 100 + (Math.random() - 0.5) * _.random(100),
+              height: 100 + (Math.random() - 0.5) * _.random(100),
+              id: 'rect' + _.random(100000)
+            }
+          };
+          break;
+        case Ellipse:
+          object = {
+            shape,
+            attributes: {
+              ...attributes,
+              x: _.random(50, canvasWidth - 100),
+              y: _.random(50, canvasHeight - 100),
+              radiusX: 75 + (Math.random() - 0.5) * _.random(50),
+              radiusY: 75 + (Math.random() - 0.5) * _.random(50),
+              id: 'ellipse' + _.random(100000)
+            }
+          };
+          break;
+        case Line:
+          object = {
+            shape,
+            attributes: {
+              ...attributes,
+              points: [
+                _.random(50, Math.round(canvasWidth / 2) - 50), // x1
+                _.random(50, Math.round(canvasHeight / 2) - 50), // y1
+                _.random(Math.round(canvasWidth / 2) + 50, canvasWidth - 50), // x2
+                _.random(Math.round(canvasHeight / 2) + 50, canvasHeight - 50) //  y2
+              ],
+              strokeWidth: 5,
+              id: 'line' + _.random(100000)
+            }
+          };
+          break;
+        default:
+          break;
+      }
+      onShapesChanged([...shapes, object]);
+    } else {
+      const portalA = {
+        shape,
+        type: ObjectTypes.PortalA,
+        attributes: {
+          fill: ObjectColors[ObjectTypes.PortalA].hex,
+          stroke: ObjectColors[ObjectTypes.PortalA].hex,
+          x: _.random(50, canvasWidth - 100),
+          y: _.random(50, canvasHeight - 100),
+          radiusX: 35,
+          radiusY: 60,
+          id: 'portalA' + _.random(100000)
+        }
+      };
+      const portalB = {
+        ...portalA,
+        type: ObjectTypes.PortalB,
+        attributes: {
+          ...portalA.attributes,
+          fill: ObjectColors[ObjectTypes.PortalB].hex,
+          stroke: ObjectColors[ObjectTypes.PortalB].hex,
+          id: 'portalB' + _.random(100000)
+        }
+      };
+      const [x, y] = [
+        canvasWidth - portalA.attributes.x,
+        canvasHeight - portalB.attributes.y
+      ];
+      Object.assign(portalB.attributes, { x, y });
 
-    onShapesChanged([...shapes, object]);
+      portalA.target = portalB;
+      portalB.target = portalA;
+
+      onShapesChanged([...shapes, portalA, portalB]);
+    }
   };
 
   buildCodeMatrix = async ({ scaleFactor = 1 } = {}) => {
@@ -229,6 +253,16 @@ class MapEditor extends React.Component {
                 this.onObjectChosen(ObjectTypes.Sea, shape)
               }
             />
+            <div className="shapes-block">
+              <p>Portal</p>
+              <button
+                className="button"
+                onClick={() => this.onObjectChosen(ObjectTypes.Portal, Ellipse)}
+              >
+                <FontAwesomeIcon className="dropdown-icon" icon={faCircle} />
+                <span className="add-portal-btn-txt">Add portal</span>
+              </button>
+            </div>
           </div>
         </div>
 
