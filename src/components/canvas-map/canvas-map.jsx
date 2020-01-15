@@ -87,38 +87,43 @@ class CanvasMap extends React.Component {
         }}
       >
         <Layer>
-          {shapes.map(({ shape: Shape, type, attributes }, i) => {
-            return (
-              <MapObject
-                Shape={Shape}
-                key={attributes.id}
-                shapeProps={attributes}
-                isSelected={attributes.id === selectedId}
-                isWithShadow={true}
-                isCaptureMode={isCaptureMode}
-                canvasWidth={canvasWidth}
-                canvasHeight={canvasHeight}
-                onSelect={e => {
-                  if (
-                    e.evt.button === 2 &&
-                    type !== ObjectTypes.Start &&
-                    type !== ObjectTypes.Finish
-                  ) {
-                    this.deleteShape(attributes.id);
-                  } else {
-                    this.selectShape(attributes.id);
-                  }
-                }}
-                onToForefront={() => {
-                  this.putToForefront(i);
-                }}
-                onChange={newAttrs => {
-                  this.setShapeAttributes(i, newAttrs);
-                }}
-                onObjectMoved={this.onObjectMoved}
-              />
-            );
-          })}
+          {shapes
+            .filter(({ type }) => {
+              if (!isCaptureMode) return true;
+              else return type !== ObjectTypes.Path;
+            })
+            .map(({ shape: Shape, type, attributes }, i) => {
+              return (
+                <MapObject
+                  Shape={Shape}
+                  key={attributes.id}
+                  shapeProps={attributes}
+                  isSelected={attributes.id === selectedId}
+                  isWithShadow={true}
+                  isCaptureMode={isCaptureMode}
+                  canvasWidth={canvasWidth}
+                  canvasHeight={canvasHeight}
+                  onSelect={e => {
+                    if (
+                      e.evt.button === 2 &&
+                      type !== ObjectTypes.Start &&
+                      type !== ObjectTypes.Finish
+                    ) {
+                      this.deleteShape(attributes.id);
+                    } else {
+                      this.selectShape(attributes.id);
+                    }
+                  }}
+                  onToForefront={() => {
+                    this.putToForefront(i);
+                  }}
+                  onChange={newAttrs => {
+                    this.setShapeAttributes(i, newAttrs);
+                  }}
+                  onObjectMoved={this.onObjectMoved}
+                />
+              );
+            })}
         </Layer>
       </Stage>
     );
